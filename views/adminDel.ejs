@@ -1,0 +1,21 @@
+<%- include('header'); -%>
+
+<h1>Select The  Admin You Want To Delete</h1>
+
+
+    <% Admins.forEach(function(admin) { %>
+        <form action="/deleteAdmin" method="POST">
+        <p>
+            <label>
+                <input type="hidden" name="Input" value=<%=admin.firstName%>>
+              <input type="checkbox"  onChange="this.form.submit()" />
+              <span><%=admin.firstName %></span>
+            </label>
+          </p>
+        </form>
+     <% }) %>
+
+
+
+
+<%- include('footer'); -%>

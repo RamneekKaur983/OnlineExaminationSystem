@@ -1,0 +1,22 @@
+<%- include('header'); -%>
+
+<form action="/studentUpdate/<%=Name %>" method="POST">
+<label for="firstName">Old First Name:<%=Student.firstName%></label>
+<input type="text" name="firstName" id="firstName" placeholder="Enter New First Name">
+<label for="lastName">Old Last Name :<%=Student.lastName %></label>
+<input type="text" name="lastName" id="lastName" placeholder="Enter New Last Name">
+<label for="email">Old Email :<%=Student.email%></label>
+<input type="text" name="email" id="email" placeholder="Enter New Email">
+<label for="password">Old Password:<%=Student.password %></label>
+<input type="text" name="password" id="password"  placeholder="Enter New Password">
+
+<button class="btn waves-effect waves-light" type="submit" name="action">Submit
+    <i class="material-icons right">send</i>
+  </button>
+
+
+</form>
+
+
+
+<%- include('footer'); -%>

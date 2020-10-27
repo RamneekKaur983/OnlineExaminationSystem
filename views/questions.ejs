@@ -1,0 +1,66 @@
+<%- include('header'); -%>
+
+
+
+
+Time : <span id="timer"></span>
+
+
+
+<p>
+
+    <% topicQuestions.forEach(function (question) { %>
+
+        <form action="/syllabus/<%=question.title %>" method="POST" name="cartCheckout" id="cartCheckout">
+     
+            <% question.questions.forEach(function (item) {  %>
+                
+                <h1><%= item.title %></h1>
+             
+                    
+                        <p>
+                          <label>
+                            <input  class="with-gap" name=<%=item.ID %> type="radio"  id="one"  value="one" />
+                            <span><%= item.option1 %></span>
+                          </label>
+                        </p>
+                        <p>
+                          <label>
+                            <input  class="with-gap" name=<%=item.ID %>  type="radio"  id="two"  value="two" />
+                            <span><%= item.option2 %></span>
+                          </label>
+                        </p>
+                        <p>
+                          <label>
+                            <input class="with-gap"  name= <%=item.ID %>  type="radio"  id="three" value="three"  />
+                            <span><%= item.option3 %></span>
+                          </label>
+                        </p>
+                        <p>
+                          <label>
+                            <input class="with-gap"   name= <%=item.ID %>  type="radio"  id="four" value="four" />
+                            <span><%= item.option4 %></span>
+                          </label>
+                        </p>
+                     
+
+             <% })  %>
+
+
+             <button class="btn waves-effect waves-light" type="submit" name="action">Submit
+                <i class="material-icons right">send</i>
+              </button>
+              <script>
+                    window.onload=function(){ 
+                window.setTimeout(function() { document.cartCheckout.submit(); }, 17000);
+            };
+              </script>
+            
+        
+    <% }) %>
+   
+   
+   
+</form>
+</p>
+<%- include('footer'); -%>

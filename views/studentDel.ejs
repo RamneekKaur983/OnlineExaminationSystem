@@ -1,0 +1,30 @@
+<%- include('header'); -%>
+
+<h1>Select The  Student You Want To Delete</h1>
+
+
+    <% Students.forEach(function(student) { %>
+        <form action="/delete" method="POST">
+        <p>
+            <label>
+                <input type="hidden" name="Input" value=<%=student.firstName%>>
+              <input type="checkbox"  onChange="this.form.submit()" />
+              <span><%=student.firstName %></span>
+            </label>
+          </p>
+        </form>
+     <% }) %>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<%- include('footer'); -%>

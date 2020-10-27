@@ -1,0 +1,40 @@
+<%- include('header'); -%>
+
+<p>
+
+    <% topicQuestions.forEach(function (question) { %>
+
+        
+     
+            <% question.questions.forEach(function (item) {  %>
+                
+                <p><h1><%=item.title %></h1>   <input type="checkbox" name="item.ID" placeholder="Delete" ></p>
+                <h4><%= item.option1 %></h4>
+                <h4><%= item.option2 %></h4>
+                <h4><%=  item.option3 %></h4>
+                <h4><%= item.option4 %></h4>
+
+             <% })  %>
+             <form action="/adminSyllabus/<%=question.title %>" method="POST">
+
+
+                <input name="Question"  type="text" placeholder="Add New Question" style="background-color: white; width: 50%;">
+                <input  name="Option1"  type="text" placeholder="Option 1" style="background-color: white;   width: 50%;">
+                <input  name="Option2" type="text"  placeholder="Option 2"  style="background-color: white; width: 50%;">
+                <input  name="Option3"  type="text"  placeholder="Option 3" style="background-color: white;  width: 50%;">
+                <input  name="Option4"  type="text" placeholder="Option 4" style="background-color: white;  width: 50%;">
+                <input type="text" name="Answer" placeholder="Actual Answer" style=" background-color: white; width: 50%;">
+                <button class="btn waves-effect waves-light" type="submit" name="action">Submit
+                   <i class="material-icons right">send</i>
+                 </button>
+                 
+           
+        </form>
+            
+            
+        
+    <% }) %>
+   
+    
+</p>
+<%- include('footer'); -%>

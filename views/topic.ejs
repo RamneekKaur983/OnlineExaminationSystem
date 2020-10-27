@@ -1,0 +1,14 @@
+<%- include('header'); -%>
+
+<% content.questions.forEach(function(question){ %>
+
+    <h1><%= question.title %></h1> 
+    <ul>
+        <li><%= question.option1 %></li>
+        <li><%= question.option2 %></li>
+        <li><%=question.option3 %></li>
+        <li><%= question.option4 %></li>
+    </ul>
+ <% }) %>
+
+ <%- include('footer'); -%>
