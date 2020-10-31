@@ -1,40 +1,56 @@
 <%- include('header'); -%>
+<style>
+    .myClass{
+        white-space: pre-line;
+    }
+    </style>
 
-<p>
+<ol>
 
     <% topicQuestions.forEach(function (question) { %>
 
-        
+        <% var x=1 %>
      
             <% question.questions.forEach(function (item) {  %>
                 
-                <p><h1><%=item.title %></h1>   <input type="checkbox" name="item.ID" placeholder="Delete" ></p>
-                <h4><%= item.option1 %></h4>
-                <h4><%= item.option2 %></h4>
-                <h4><%=  item.option3 %></h4>
-                <h4><%= item.option4 %></h4>
+                <li class="myClass" style="white-space: pre-line;"><%=item.title %></li>
+                <ol type="A">
+                <li><%= item.option1 %></li>
+                <li><%= item.option2 %></li>
+                <li><%=  item.option3 %></li>
+                <li><%= item.option4 %></li>
+                <form action="">
+                    <input type="hidden" name="QuestionName" value=<%=item.title%>>
+                    <input type="hidden" name="TopicName" value=<%=question.title%>> 
+                    <a class="waves-effect waves-light btn" style="background-color: #665998; ">Delete</a>
+                </form>
+                
+            </ol>
 
              <% })  %>
-             <form action="/adminSyllabus/<%=question.title %>" method="POST">
+             <div class="collection" style="text-align: center;">
+             <form action="/adminSyllabus/<%=question.title %>" method="POST" style="background-color:#665998; padding-top: 2%; padding-bottom: 2%;">
 
 
-                <input name="Question"  type="text" placeholder="Add New Question" style="background-color: white; width: 50%;">
-                <input  name="Option1"  type="text" placeholder="Option 1" style="background-color: white;   width: 50%;">
-                <input  name="Option2" type="text"  placeholder="Option 2"  style="background-color: white; width: 50%;">
-                <input  name="Option3"  type="text"  placeholder="Option 3" style="background-color: white;  width: 50%;">
-                <input  name="Option4"  type="text" placeholder="Option 4" style="background-color: white;  width: 50%;">
-                <input type="text" name="Answer" placeholder="Actual Answer" style=" background-color: white; width: 50%;">
-                <button class="btn waves-effect waves-light" type="submit" name="action">Submit
-                   <i class="material-icons right">send</i>
+                <input  autocomplete="off" name="Question"  type="text" placeholder="Add New Question" style="background-color: white; width: 50%; text-align: center; ">
+                <input  autocomplete="off" name="Option1"  type="text" placeholder="Option 1" style="background-color: white;   width: 50%; text-align: center;">
+                <input  autocomplete="off"  name="Option2" type="text"  placeholder="Option 2"  style="background-color: white; width: 50%; text-align: center;">
+                <input autocomplete="off"  name="Option3"  type="text"  placeholder="Option 3" style="background-color: white;  width: 50%; text-align: center;">
+                <input  autocomplete="off" name="Option4"  type="text" placeholder="Option 4" style="background-color: white;  width: 50%; text-align: center;">
+                <input  autocomplete="off" name="Answer"  type="text" placeholder="Actual Answer" style=" background-color: white; width: 50%; text-align: center;">
+                <br>
+                <button class="btn waves-effect waves-light" type="submit" name="action" style=" color: black;   background-color:#E8E3FB    ">Add
+                   <i class="material-icons right">New Question</i>
                  </button>
                  
            
         </form>
+    </div>
             
             
         
     <% }) %>
    
     
-</p>
+    </ol>
 <%- include('footer'); -%>

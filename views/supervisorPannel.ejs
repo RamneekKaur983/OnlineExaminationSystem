@@ -1,24 +1,63 @@
 <%- include('header'); -%>
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap" rel="stylesheet">
 
 
 <div>
 
-<h1>Manage The Users </h1>
+<h2 style="background-color: white; text-align: center; border-style: solid; padding-top: 1%; padding-bottom: 1%; font-family: 'Passion One', cursive;">Manage Student Accounts </h2>
 <br>
 <br>
+<div class="row">
+    <div class="col s4">
+        <button class="button "  onclick="window.location.href='/studentUpdate'"><span>Update Students</span></button>
+    </div>
+   
+    <div class="col s4">
+        <button class="button "  onclick="window.location.href='/studentAdd'" ><span>Add Student</span></button>
+    </div>
+    
+    <div class="col s4">
+        <button class="button " onclick="window.location.href='/studentDel'"   ><span>Delete  Student</span></button>
+    </div>
 
-<button class="button"  onclick="window.location.href='/studentUpdate'"><span>Update Students</span></button>
-<br>
-<button class="button"  onclick="window.location.href='/studentAdd'" ><span>Add Student</span></button>
-<br>
-<button class="button" onclick="window.location.href='/studentDel'"   ><span>Delete  Student</span></button>
-<br>
+    
 
-<button class="button" onclick="window.location.href='/Del'" ><span>Update Admin</span></button>
-<br>
-<button class="button"  onclick="window.location.href='/adminAdd'" ><span>Add Admin</span></button>
-<br>
-<button class="button" onclick="window.location.href='/adminDel'" ><span>Delete Admin</span></button>
+</div>
+
+<h2 style="background-color: white; text-align: center; border-style: solid; padding-top: 1%; padding-bottom: 1%; font-family: 'Passion One', cursive;">Manage Admin Accounts</h2>
+
+<div class="row">
+
+    <div class="col s4">
+        <button class="button" onclick="window.location.href='/adminUpdate'" ><span>Update Admin</span></button>
+    </div>
+    <div class="col s4">
+        <button class="button"  onclick="window.location.href='/adminAdd'" ><span>Add Admin</span></button>
+    </div>
+    <div class="col s4">
+        <button class="button" onclick="window.location.href='/adminDel'" ><span>Delete Admin</span></button>
+    </div>
+
+</div>
+<h2 style="background-color: white; text-align: center; border-style: solid; padding-top: 1%; padding-bottom: 1%; font-family: 'Passion One', cursive;">Manage Quiz</h2>
+
+<div class="row">
+    <div class="col s4">
+        <button class="button" onclick="window.location.href='/'" ><span>Update </span></button>
+    </div>
+    <div class="col s4">
+        <button class="button" onclick="window.location.href='/'" ><span>Add</span></button>
+    </div>
+    <div class="col s4">
+        <button class="button" onclick="window.location.href='/'" ><span>Delete </span></button>
+    </div>
+
+
+</div>
+
+
+
+
 
 
 

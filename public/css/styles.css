@@ -2,7 +2,7 @@
     background-color:#F6F161; 
 } 
 body {
-    background-color:#F7F6D9 ;
+    background-color:#E8E3FB ;
   }
 .navbar-heading
 {
@@ -45,7 +45,7 @@ body {
   }
   .button {
     border-radius: 4px;
-    background-color:#e0b06c;
+    background-color:#665998;
     border: none;
     color: #FFFFFF;
     text-align: center;
@@ -87,3 +87,6 @@ body {
   {
     -webkit-appearance:checkbox;
   }
+  
+
+ 

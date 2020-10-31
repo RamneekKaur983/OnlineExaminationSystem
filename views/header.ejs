@@ -16,31 +16,23 @@
    <!-- Compiled and minified JavaScript -->
    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
+   <!-- Fonts Link -->
+   <link href="https://fonts.googleapis.com/css2?family=Arvo:wght@700&family=Caveat:wght@700&family=Lobster&family=Open+Sans:wght@300&family=Syne+Tactile&family=Turret+Road:wght@800&display=swap" rel="stylesheet">
+
   
 
-    <title>Document</title>
-    <nav class="navbar-custom " >
-      <a class="navbar-brand navbar-heading serif " href="#">Organisation Name</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
-          <li class="nav-item active">
-            <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Features</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Pricing</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link disabled" href="#">Disabled</a>
-          </li>
+    <title>CodeBytes</title>
+    <nav>
+      <div class="nav-wrapper" style="background-color :#665998;">
+        <a href="/" class="brand-logo" style="font-family: 'Turret Road', cursive; color: black;"  >CodeBytes</a>
+        <ul id="nav-mobile" class="right hide-on-med-and-down">
+          <li><a href="sass.html"></a></li>
+          <li><a href="badges.html"></a></li>
+          <li><a href="collapsible.html"></a></li>
         </ul>
       </div>
     </nav>
+          
     <script>
 
     
@@ -48,7 +40,7 @@
     var time = setInterval(myTimer, 1000);
     
     function myTimer() {
-        document.getElementById('timer').innerHTML = sec + "sec left";
+        document.getElementById('timer').innerHTML = sec + "  sec left ";
         sec--;
         if (sec == -1) {
             clearInterval(time);
@@ -56,36 +48,11 @@
         }
     }
 
-
-    function startTimer(duration, display) {
-    var timer = duration, minutes, seconds;
-    setInterval(function () {
-        minutes = parseInt(timer / 60, 10);
-        seconds = parseInt(timer % 60, 10);
-
-        minutes = minutes < 10 ? "0" + minutes : minutes;
-        seconds = seconds < 10 ? "0" + seconds : seconds;
-
-        display.textContent = minutes + ":" + seconds;
-
-        if (--timer < 0) {
-            timer = duration;
-        }
-    }, 1000);
-}
-
-window.onload = function () {
-    var fiveMinutes = 60 ,
-        display = document.querySelector('#time');
-    startTimer(fiveMinutes, display);
-};
-
-
-
   </script>
 </head>
 
     <body>
+    <div class="container">
 
    
 

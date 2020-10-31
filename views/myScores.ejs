@@ -1,0 +1,59 @@
+<%- include('header'); -%>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<style>
+    #customers {
+      font-family: Arial, Helvetica, sans-serif;
+      border-collapse: collapse;
+      background-color: white;
+      width: 100%;
+    }
+    
+    #customers td, #customers th {
+      border: 1px solid black;
+      padding: 8px;
+    }
+    
+    #customers tr:nth-child(even){background-color: #f2f2f2;}
+    
+    #customers tr:hover {background-color: #ddd;}
+    
+    #customers th {
+      padding-top: 12px;
+      padding-bottom: 12px;
+      text-align: left;
+      background-color:#665998;
+      color: white;
+    }
+    </style>
+    <div class="container"> 
+<h1 style="font-family: 'Anton', sans-serif;  text-align: center;">MY SCORES</h1>
+<table id="customers"  >
+    <thead >
+      <tr >
+          <th >Topic Name</th>
+          <th>Marks Obtained</th>
+          <th>Time</th>
+          
+      </tr>
+<% Scores.forEach(function(item){  %>
+
+
+<tbody>
+  <tr>
+    <td ><%= item.topic %></td>
+    <td><%= item.marks %></td>
+    <td><%=item.time %></td>
+    
+  </tr>
+ 
+</tbody>
+
+</thead>
+<% }) %>
+</table>
+
+    
+
+</div>
+
+<%- include('footer'); -%>

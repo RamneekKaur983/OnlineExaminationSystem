@@ -1,0 +1,16 @@
+<%- include('header'); -%>
+
+
+<% Admins.forEach(function(admin){ %>
+    <div class="collection">
+        <a href="/adminUpdate/<%=admin.firstName %>" class="collection-item"><%=admin.firstName %></a>
+        
+      </div>
+
+
+ <% }) %>
+
+
+
+
+<%- include('footer'); -%>
