@@ -1,4 +1,8 @@
 <%- include('header'); -%>
+<% if(messages.error) { %>
+
+	<%= messages.error %>
+  <%} %>
 <div class="row">
 	<div class="col-md-12">
 		<form action="/forgot" method="POST">

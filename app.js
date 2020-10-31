@@ -12,6 +12,8 @@ const crypto = require("crypto");
 const flash= require('express-flash')
 const { rmdirSync } = require('fs')
 const random = require('mongoose-simple-random')
+const bcrypt =require('bcrypt')
+const initializePassport= require('./passport-config')
 app.set('view engine' , 'ejs')
 app.use(bodyParser.urlencoded({extended:true}))
 app.use(flash());
@@ -25,19 +27,11 @@ app.use(session({
     saveUninitialized: true,
    
   }))
-
   app.use(passport.initialize())
   app.use(passport.session())
-
-
 mongoose.connect('mongodb://localhost:27017/OnlineExamination', {useNewUrlParser: true});
 mongoose.set('useCreateIndex', true);
-app.use(function(req, res, next){
-    res.locals.currentUser = req.user;
-    res.locals.success = req.flash('success');
-    res.locals.error = req.flash('error');
-    next();
- });
+
 
 const QuestionSchema = new mongoose.Schema({
 
@@ -55,12 +49,14 @@ const userSchema = new mongoose.Schema({
 firstName : String , 
 lastName : String , 
 email : String , 
-password : String ,
+password : String , 
 resetPasswordToken: String,
-    resetPasswordExpires: Date
+    resetPasswordExpires: Date , 
+    role : Number
+
 
 })
-userSchema.plugin(passportLocalMongoose , {usernameField: 'email'})
+
 
 const adminSchema = new mongoose.Schema({
 
@@ -78,23 +74,9 @@ const supervisorSchema = new mongoose.Schema({
     password : String
 })
 const Supervisor = new mongoose.model("Supervisor" , supervisorSchema)
-adminSchema.plugin(passportLocalMongoose , {usernameField: 'email'})
+
 const Admin= new mongoose.model("Admin"  , adminSchema)
-const admin= new Admin({
 
-    firstName : "Rammneek" , 
-    lastName :"Kaur" , 
-    email : "ramneek983@gmail.com"  , 
-    password:"qwerty"
-})
-const supervisor = new Supervisor({
-
-    firstName : "Tiksha" , 
-    lastName : "Kapoor" , 
-    email : "tk@kp.com" , 
-    password : "tkkp"
-
-})
 QuestionSchema.plugin(random)
 const scoreSchema= new mongoose.Schema({
     email : String , 
@@ -106,51 +88,39 @@ const Score = new mongoose.model("Score" , scoreSchema)
 
 
 const Question = new  mongoose.model("Question" ,QuestionSchema)
+userSchema.plugin(passportLocalMongoose , {usernameField: 'email'})
 const User =  new mongoose.model("User", userSchema)
+initializePassport(
+    
+    passport , 
+   function(email)
+   {
+       
+       var promise=User.findOne({email:email} ).exec()
+       {
+            
+       }
+       
+       return promise
 
-passport.use(User.createStrategy());
+   } , 
+   function(id)
+   {
+       var promise=User.findOne({_id:id}).exec()
+       {
 
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
-const stack1= new Question ({
+       }
+       return promise
+       
+   }
+    
+    )
+  
 
-    title :" What is the space complexity for deleting a linked list?" , 
-    option1 : "O(1)" ,
-    option2 : " O(n)" , 
-    option3 : "Either O(1) or O(n)" , 
-    option4 : "O(logn)"
-})
-//stack1.save();
-//question1.save()
-const stack2= new Question ({
 
-    title :"Which of the following is not a disadvantage to the usage of array?" , 
-    option1 : "Fixed size" ,
-    option2 : " There are chances of wastage of memory space if elements inserted in an array are lesser than the allocated size" , 
-    option3 : " Insertion based on position" , 
-    option4 : "Accessing elements at specified positions"
-})
-//question2.save()
-//stack2.save();
-const stack3= new Question ({
 
-    title :"What is the time complexity of inserting at the end in dynamic arrays?" , 
-    option1 : " O(1)" ,
-    option2 : "O(n)" , 
-    option3 : "O(logn)" , 
-    option4 : "Either O(1) or O(n)"
-})
-//question3.save()
-//stack3.save();
-const stack4 = new Question({
-    title :"What is the time complexity to count the number of elements in the linked list?" ,     
-    option1 :" O(1)" , 
-    option2:"O(n)" , 
-    option3 :"O(logn)"  ,
-    option4 :"O(n2)"
-})
-//stack4.save();
-const arrayQues=[stack1 , stack2 , stack3 , stack4]
+
+
 
 const TopicSchema = new mongoose.Schema({
 
@@ -161,21 +131,15 @@ const TopicSchema = new mongoose.Schema({
 
 const Topic = mongoose.model("Topic" , TopicSchema)
 
-const Array= new Topic({
-    title : "Linked List" , 
-    questions :arrayQues
-})
-//Array.save()
-//topic1.save()
+
 
 app.get('/' , function(req, res)
 {
     res.render('home')
 })
-app.get('/syllabus' , function(req, res)
+app.get('/syllabus' ,checkAuthenticated , function(req, res)
 {
-    if(req.isAuthenticated())
-    {
+    
         Topic.find({} , function(err, foundItems)
         {
             if(err)
@@ -187,11 +151,7 @@ app.get('/syllabus' , function(req, res)
                 res.render('syllabus' , {topicNames : foundItems})
             }
         })
-    }
-    else
-    {
-        res.redirect('login')
-    }
+    
    
 })
 app.get('/adminSyllabus' , function(req, res)
@@ -290,16 +250,8 @@ app.post('/adminSyllabus/:subtopic' , function(req, res)
 
 
 })
-app.get('/topic' , function(req, res)
-{
-    const topicX= new Topic({
-        title : "Linked List" , 
-        questions :arrayQues
-    })
-    console.log(topicX)
-    res.render('topic' , {content : topicX})
-})
-app.get('/syllabus/:subtopic' , function(req, res)
+
+app.get('/syllabus/:subtopic' ,checkAuthenticated , function(req, res)
 {
    
 
@@ -376,63 +328,49 @@ app.post('/syllabus/:subtopic' , function(req, res)
 })
 app.get('/login' , function(req, res)
 {
-    
-    res.sendFile('/views/login.html' , { root : __dirname});
+    res.render('login' ,{ root : __dirname})
+    //res.sendFile('/views/login.html' , { root : __dirname});
 })
 app.get('/register' , function(req, res)
 {
     res.sendFile('/views/register.html' , { root : __dirname});
 })
-const firstUser= new User({
-    firstName : "Ramneek" , 
-    lastName : "Kaur" , 
-    email :" ramneek983@gmail.com" , 
-    password : "badliar123"
-})
-app.post('/login' , function(req, res)
-{
- 
-    const user = new User({
-        firstName :" " , 
-        lastName :" "  , 
-        email : req.body.email , 
-        password :req.body.password
-    })
-    req.login(user , function(err)
-    {
-        if(err)
-        {
-            console.log(err)
-        }
-        else{
-            passport.authenticate("local")(req, res , function(){
-                res.redirect('syllabus')
-            })
-        }
-    })
+
+app.post('/login' , passport.authenticate('local', {
     
+    successRedirect :'/syllabus' , 
+    failureRedirect :'/login' ,
+    failureFlash : true
+   
+}))
+
+app.post('/register',async(req, res)=>{
+    
+
+ 
+    try{
+        const hashedPassword=  await bcrypt.hash(req.body.password , 10)
+        const newUser= new User({
+            fistName: req.body.fistName , 
+            lastName:req.body.lastName , 
+            email:req.body.email, 
+            password:hashedPassword
+
+        })
+        console.log(newUser)
+        newUser.save()
+        res.redirect('/login')
+    }
+    catch
+    {
+        res.redirect('/register')
+    }
+       
+
+
+
 })
 
-app.post('/register' , function(req, res)
-{
-   
- 
-    User.register({ email :req.body.email , firstName : req.body.firstName , lastName:req.body.lastName } , req.body.password,function(err , user)
-   {
-       if(err)
-       {
-           console.log(err)
-           res.redirect('/')
-       }
-       else
-       {
-           passport.authenticate("local")(req, res , function(){
-               res.redirect('syllabus')
-           })
-       }
-   } )
-   
-})
 app.get('/adminLogin' , function(req, res)
 {
     res.sendFile('/views/adminLogin.html' , { root : __dirname});
@@ -750,13 +688,13 @@ app.get('/forgot', function(req, res) {
         var smtpTransport = nodemailer.createTransport({
           service: 'Gmail', 
           auth: {
-            user: 'ramneek983@gmail.com',
+            user: 'bytecodebytes@gmail.com',
             pass: process.env.GMAILPW
           }
         });
         var mailOptions = {
           to: user.email,
-          from: 'ramneek@gmail.com',
+          from: 'bytecodebytes@gmail.com',
           subject: 'Node.js Password Reset',
           text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
             'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
@@ -788,25 +726,46 @@ app.get('/forgot', function(req, res) {
   app.post('/reset/:token', function(req, res) {
     async.waterfall([
       function(done) {
-        User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
+        User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, async function(err, user) {
           if (!user) {
             req.flash('error', 'Password reset token is invalid or has expired.');
-            return res.redirect('back');
+            return res.redirect('/');
           }
           if(req.body.password === req.body.confirm) {
+
+            
+            try
+            {const tempPass= await bcrypt.hash(req.body.password ,10)
+                User.updateOne({email:user.email} , {password:tempPass} , function(err)
+                {
+                    console.log(err)
+                })
+            }
+            catch(e){
+                console.log(e)
+            }
+           
             user.setPassword(req.body.password, function(err) {
+                if(err)
+                {
+                    console.log(err)
+                }
               user.resetPasswordToken = undefined;
               user.resetPasswordExpires = undefined;
   
               user.save(function(err) {
                 req.logIn(user, function(err) {
+                    if(err)
+                    {
+                        console.log(err)
+                    }
                   done(err, user);
                 });
               });
             })
           } else {
               req.flash("error", "Passwords do not match.");
-              return res.redirect('back');
+              return res.redirect('/');
           }
         });
       },
@@ -814,13 +773,13 @@ app.get('/forgot', function(req, res) {
         var smtpTransport = nodemailer.createTransport({
           service: 'Gmail', 
           auth: {
-            user: 'ramneek983@gmail.com',
+            user: 'bytecodebytes@gmail.com',
             pass: process.env.GMAILPW
           }
         });
         var mailOptions = {
           to: user.email,
-          from: 'ramneek983@mail.com',
+          from: 'bytecodebytes@gmail.com',
           subject: 'Your password has been changed',
           text: 'Hello,\n\n' +
             'This is a confirmation that the password for your account ' + user.email + ' has just been changed.\n'
@@ -846,7 +805,23 @@ app.get('/forgot', function(req, res) {
 
 
 
-
+  function checkAuthenticated(req, res, next)
+  {
+      if(req.isAuthenticated())
+      {
+          return next()
+      }
+      res.redirect('/login')
+  }
+  function checkNotAuthenticated(req, res, next)
+  {
+      if(req.isAuthenticated())
+      {
+          return    res.redirect('/')
+      }
+     
+       next()
+  }
 
 app.listen(3000 , function()
 {
