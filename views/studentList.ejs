@@ -20,7 +20,7 @@
    <!-- Fonts Link -->
    <link href="https://fonts.googleapis.com/css2?family=Arvo:wght@700&family=Caveat:wght@700&family=Lobster&family=Open+Sans:wght@300&family=Syne+Tactile&family=Turret+Road:wght@800&display=swap" rel="stylesheet">
 
-  
+   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@900&family=Roboto+Slab:wght@900&display=swap" rel="stylesheet">
 
     <title>CodeBytes</title>
     <nav>
@@ -30,6 +30,9 @@
             <li><a href="/logout" ><h5 style="font-family: 'Turret Road', cursive; color: black; size: 20px;">
                 Log Out
                 </h5></a></li>
+                <li><a href="/adminSyllabus" ><h5 style="font-family: 'Turret Road', cursive; color: black; size: 20px;">
+                    Home Page
+                    </h5></a></li>
         </ul>
       </div>
     </nav>
@@ -56,67 +59,32 @@
     <div class="container">
 
    
-
-
-
-
-
-<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap" rel="stylesheet">
-
-
-<div>
-
-<h2 style="background-color: white; text-align: center; border-style: solid; padding-top: 1%; padding-bottom: 1%; font-family: 'Passion One', cursive;">Manage Student Accounts </h2>
-<br>
-<br>
-<div class="row">
-    <div class="col s4">
-        <button class="button "  onclick="window.location.href='/studentUpdate'"><span>Update Students</span></button>
-    </div>
    
-    <div class="col s4">
-        <button class="button "  onclick="window.location.href='/studentAdd'" ><span>Add Student</span></button>
-    </div>
-    
-    <div class="col s4">
-        <button class="button " onclick="window.location.href='/studentDel'"   ><span>Delete  Student</span></button>
-    </div>
+   
+     <div style="background-color: white ; text-align: center;"> 
+    <h1 style="font-family: 'Merriweather', serif;">Select Student To View Scores</h1>
+   </div>
+
+
+
+   <div class="collection">
+    <ol>
+
+<% Students.forEach(function(student){ %>
 
     
 
-</div>
-
-<h2 style="background-color: white; text-align: center; border-style: solid; padding-top: 1%; padding-bottom: 1%; font-family: 'Passion One', cursive;">Manage Teacher Accounts</h2>
-
-<div class="row">
-
-    <div class="col s4">
-        <button class="button" onclick="window.location.href='/adminUpdate'" ><span>Update Teacher</span></button>
-    </div>
-    <div class="col s4">
-        <button class="button"  onclick="window.location.href='/adminAdd'" ><span>Add Teacher</span></button>
-    </div>
-    <div class="col s4">
-        <button class="button" onclick="window.location.href='/adminDel'" ><span>Delete Teacher</span></button>
-    </div>
-
-</div>
-
-<h4 style="background-color: white; text-align: center; border-style: solid; padding-top: 1%; padding-bottom: 1%; font-family: 'Passion One', cursive;">To Manage Quiz ,Login As Teacher</h4>
-<div style="text-align: center;">
-    <button class="button"  onclick="window.location.href='/adminLogin'"  style="text-align: center;"><span>Login </span></button>
     
+       <li> <a href="/myscore/<%=student.email %>" class="collection-item"><%=student.firstName %> <%=student.lastName%></a></li>
+
+    
+     
+  
+            
+
+<% }) %>
+
+
+</ol>
 </div>
-
-
-
-
-</div>
-
-
-
-
-
-
-
 <%- include('footer'); -%>

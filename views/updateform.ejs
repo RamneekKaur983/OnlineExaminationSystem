@@ -1,6 +1,6 @@
 <%- include('header'); -%>
 
-<form action="/studentUpdate/<%=Name %>" method="POST">
+<form action="/studentUpdate/<%=Name %>" method="PUT">
 <label for="firstName">Old First Name:<%=Student.firstName%></label>
 <input type="text" name="firstName" id="firstName" placeholder="Enter New First Name">
 <label for="lastName">Old Last Name :<%=Student.lastName %></label>

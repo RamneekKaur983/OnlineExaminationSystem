@@ -4,7 +4,7 @@
 
 
     <% Admins.forEach(function(admin) { %>
-        <form action="/deleteAdmin" method="POST">
+        <form action="/adminDel" method="POST">
         <p>
             <label>
                 <input type="hidden" name="Input" value=<%=admin.firstName%>>

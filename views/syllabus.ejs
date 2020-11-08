@@ -19,7 +19,16 @@
    <!-- Fonts Link -->
    <link href="https://fonts.googleapis.com/css2?family=Arvo:wght@700&family=Caveat:wght@700&family=Lobster&family=Open+Sans:wght@300&family=Syne+Tactile&family=Turret+Road:wght@800&display=swap" rel="stylesheet">
 
-  
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+   crossorigin="anonymous">
+
+<style>
+body{
+   background-color:#E8E3FB;
+}
+
+
+</style>
 
     <title>CodeBytes</title>
     
@@ -30,6 +39,11 @@
           <li><a href="/myScore" ><h5 style="font-family: 'Turret Road', cursive; color: black; size: 20px;">
             My Scores
           </h5></a></li>
+         
+          <li><a href="/editAccount" ><h5 style="font-family: 'Turret Road', cursive; color: black; size: 20px;">
+            My Account
+          </h5></a></li>
+          
           
         </ul>
       </div>
@@ -51,12 +65,22 @@
         }
     }
 
+
+
   </script>
+
+
+
+
+
 </head>
 
-    <body>
-    <div class="container">
-
+    <body >
+      <div class="modal fade">
+        <h1>Instruction</h1>
+      </div>
+    
+         <div class="container">             
    
 <div class="row">
     <div class="col s12 m7">
@@ -71,6 +95,8 @@
                 <% topicNames.forEach(function(item) { %>
             
                   
+                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#demoModal">Show Modal</button>
+                  
                     <a href= "/syllabus/<%= item .title %> " class="collection-item "><%= item.title %></a>
                     <br>
             
@@ -78,12 +104,10 @@
                     <% } )%>
                     
                        
-            
+                  </div>  
             </div>
         </div>
-        <div class="card-action">
-            <a class="waves-effect waves-light btn"  style="background-color:#665998 ;" href="/logout">Log Out</a>
-        </div>
+        
       </div>
     </div>
   </div>
@@ -96,6 +120,16 @@
 </div>
 
 </body>
+<script>
+
+  
+
+        $(document).ready(function () { 
+            $('.modal').modal(); 
+        } 
+        ) 
+
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 

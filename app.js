@@ -14,6 +14,11 @@ const { rmdirSync } = require('fs')
 const random = require('mongoose-simple-random')
 const bcrypt =require('bcrypt')
 const initializePassport= require('./passport-config')
+const _=require('lodash')
+const fs=require('fs')
+const path=require('path')
+const multer=require('multer')
+const { isEmpty } = require('lodash')
 app.set('view engine' , 'ejs')
 app.use(bodyParser.urlencoded({extended:true}))
 app.use(flash());
@@ -44,38 +49,23 @@ const QuestionSchema = new mongoose.Schema({
     ID : Number
 })
 
+
 const userSchema = new mongoose.Schema({
 
-firstName : String , 
-lastName : String , 
-email : String , 
-password : String , 
-resetPasswordToken: String,
+
+    firstName : String , 
+    lastName : String , 
+    email : String , 
+    password : String ,
+    resetPasswordToken: String,
     resetPasswordExpires: Date , 
-    role : Number
-
+    role : Number  , 
+    phoneNumber : String, 
+    DOB : String
 
 })
 
 
-const adminSchema = new mongoose.Schema({
-
-
-    firstName : String , 
-    lastName : String , 
-    email : String , 
-    password : String
-})
-const supervisorSchema = new mongoose.Schema({
-
-    firstName : String , 
-    lastName : String , 
-    email : String , 
-    password : String
-})
-const Supervisor = new mongoose.model("Supervisor" , supervisorSchema)
-
-const Admin= new mongoose.model("Admin"  , adminSchema)
 
 QuestionSchema.plugin(random)
 const scoreSchema= new mongoose.Schema({
@@ -131,7 +121,27 @@ const TopicSchema = new mongoose.Schema({
 
 const Topic = mongoose.model("Topic" , TopicSchema)
 
+const  imageSchema = new mongoose.Schema({ 
+    parentId: String, 
+ 
+    img: 
+    { 
+        data: Buffer, 
+        contentType: String 
+    } 
+}); 
 
+const Image = mongoose.model("Image", imageSchema)
+var storage = multer.diskStorage({ 
+    destination: (req, file, cb) => { 
+        cb(null, 'uploads') 
+    }, 
+    filename: (req, file, cb) => { 
+        cb(null, file.fieldname + '-' + Date.now()) 
+    } 
+}); 
+  
+var upload = multer({ storage: storage }); 
 
 app.get('/' , function(req, res)
 {
@@ -148,13 +158,13 @@ app.get('/syllabus' ,checkAuthenticated , function(req, res)
             }
             else
             {
-                res.render('syllabus' , {topicNames : foundItems})
+                res.render('modal' , {topicNames : foundItems})
             }
         })
     
    
 })
-app.get('/adminSyllabus' , function(req, res)
+app.get('/adminSyllabus' ,checkAdminOrSupervisor, function(req, res)
 {
     Topic.find({} , function(err, foundItems)
         {
@@ -169,7 +179,7 @@ app.get('/adminSyllabus' , function(req, res)
         })
   
 })
-app.post('/adminSyllabus' , function(req, res)
+app.post('/adminSyllabus' ,checkAdminOrSupervisor , function(req, res)
 {
     console.log("New topic running")
     console.log(req.body.NewTopic)
@@ -183,7 +193,7 @@ app.post('/adminSyllabus' , function(req, res)
     res.redirect('/adminSyllabus')
 })
 
-app.get('/adminSyllabus/:subtopic' , function(req, res)
+app.get('/adminSyllabus/:subtopic' ,checkAdminOrSupervisor,  function(req, res)
 {
     console.log(req.params.subtopic)
     Topic.find({title : req.params.subtopic} , function(err, foundItems)
@@ -195,12 +205,12 @@ app.get('/adminSyllabus/:subtopic' , function(req, res)
         else
         {
         
-            res.render('adminQuestions' , {topicQuestions : foundItems})
+            res.render('adminQuestions' , {topicQuestions : foundItems , Topic :req.params.subtopic})
         }
     })
 
 })
-app.post('/adminSyllabus/:subtopic' , function(req, res)
+app.post('/adminSyllabus/:subtopic' ,checkAdminOrSupervisor,   function(req, res)
 {
     console.log("I am runnig")
    
@@ -276,7 +286,7 @@ app.get('/syllabus/:subtopic' ,checkAuthenticated , function(req, res)
     })
     //res.render('questions', {topicQuestions:items})
 })
-app.post('/syllabus/:subtopic' , function(req, res)
+app.post('/syllabus/:subtopic' , checkAuthenticated , function(req, res)
 {
     var score=0
     console.log(req.user.email)
@@ -326,9 +336,14 @@ app.post('/syllabus/:subtopic' , function(req, res)
     })
 
 })
-app.get('/login' , function(req, res)
+app.get('/login' , checkNotAuthenticated ,function(req, res)
 {
     res.render('login' ,{ root : __dirname})
+    //res.sendFile('/views/login.html' , { root : __dirname});
+})
+app.get('/Suplogin' , checkNotSupervisor,function(req, res)
+{
+    res.render('Suplogin' )
     //res.sendFile('/views/login.html' , { root : __dirname});
 })
 app.get('/register' , function(req, res)
@@ -336,10 +351,17 @@ app.get('/register' , function(req, res)
     res.sendFile('/views/register.html' , { root : __dirname});
 })
 
-app.post('/login' , passport.authenticate('local', {
+app.post('/login' , checkNotAuthenticated ,passport.authenticate('local', {
     
     successRedirect :'/syllabus' , 
     failureRedirect :'/login' ,
+    failureFlash : true
+   
+}))
+app.post('/Suplogin' ,checkNotSupervisor ,passport.authenticate('local', {
+    
+    successRedirect :'/supervisorPannel' , 
+    failureRedirect :'/Suplogin' ,
     failureFlash : true
    
 }))
@@ -351,13 +373,14 @@ app.post('/register',async(req, res)=>{
     try{
         const hashedPassword=  await bcrypt.hash(req.body.password , 10)
         const newUser= new User({
-            fistName: req.body.fistName , 
+            firstName: req.body.firstName , 
             lastName:req.body.lastName , 
-            email:req.body.email, 
+            email:req.body.email,  
+            role :0 ,
             password:hashedPassword
 
         })
-        console.log(newUser)
+        console.log(newUser.firstName)
         newUser.save()
         res.redirect('/login')
     }
@@ -370,66 +393,51 @@ app.post('/register',async(req, res)=>{
 
 
 })
-
-app.get('/adminLogin' , function(req, res)
+app.get('/Supregister' , function(req, res)
 {
-    res.sendFile('/views/adminLogin.html' , { root : __dirname});
+    res.render('supervisorRegister')
 })
-app.post('/adminLogin' , function(req, res)
-{
-    Admin.findOne({email : req.body.email} , function(err, items)
+app.post('/Supregister',async(req, res)=>{
+    
+
+ 
+    try{
+        const hashedPassword=  await bcrypt.hash(req.body.password , 10)
+        const newUser= new User({
+            firstName: req.body.firstName , 
+            lastName:req.body.lastName , 
+            email:req.body.email,  
+            role :2 ,
+            password:hashedPassword
+
+        })
+        console.log(newUser.firstName)
+        newUser.save()
+        res.redirect('/Suplogin')
+    }
+    catch
     {
-        console.log(items)
-        if(err)
-        {
+        res.redirect('/Supregister')
+    }
+       
 
-            console.log(err)
-        }
-        else
-        {
-            if(req.body.password==items.password)
-            {
-                res.redirect('/adminSyllabus')
-            }
-        }
-    })
 
 
 })
-app.get('/supervisorLogin' , function(req, res)
+
+app.get('/adminLogin' , checkNotAdmin  , function(req, res)
 {
-    res.sendFile('/views/supervisorLogin.html' , { root : __dirname});
+    res.render('adminLogin')
+   // res.sendFile('/views/adminLogin.html' , { root : __dirname});
 })
+app.post('/adminLogin' , checkNotAdmin ,passport.authenticate('local', {
+    
+    successRedirect :'/adminSyllabus' , 
+    failureRedirect :'/adminLogin' ,
+    failureFlash : true
+   
+}))
 
-app.post('/supervisorLogin' , function(req, res)
-{
-    console.log(req.body.email)
-    Supervisor.findOne({email : req.body.email} , function(err, items)
-    {
-        console.log(items)
-        if(err)
-        {
-
-            console.log(err)
-        }
-        else
-        {
-            if(req.body.password==items.password)
-            {
-                res.render('supervisorPannel')
-            }
-        }
-    })
-
-
-
-})
-
-
-app.get('/delete' , function(req, res)
-{
-    console.log("Delete Get Running")
-})
 
 app.get('/logout' , function(req, res)
 {
@@ -438,9 +446,9 @@ app.get('/logout' , function(req, res)
 })
 
 
-app.get('/studentDel' , function(req, res)
+app.get('/studentDel' ,checkSupervisor  ,  function(req, res)
 {
-    User.find({} , function(err , foundItems)
+    User.find({role:0} , function(err , foundItems)
     {
         if(err)
         {
@@ -460,7 +468,7 @@ app.post('/delete' , function(req, res)
 {
     console.log("Put delete running")
     console.log(req.body)
-    User.deleteOne({firstName : req.body.Input} ,function(err)
+    User.deleteOne({firstName : req.body.Input , role:0} ,function(err)
     {
         if(err)
         {
@@ -471,9 +479,9 @@ app.post('/delete' , function(req, res)
     res.redirect('studentDel')
 
 })
-app.get('/studentUpdate' , function(req, res)
+app.get('/studentUpdate' ,  checkSupervisor , function(req, res)
 {
-    User.find({} , function(err , foundItems)
+    User.find({role:0} , function(err , foundItems)
     {
         if(err)
         {
@@ -483,15 +491,17 @@ app.get('/studentUpdate' , function(req, res)
         {
             if(foundItems)
             {
+                console.log(foundItems)
+                
                 res.render('studentUpdate' , {Students : foundItems})
             }
         }
     })
 })
 
-app.get('/studentUpdate/:name' , function(req, res)
+app.get('/studentUpdate/:name' ,checkSupervisor ,  function(req, res)
 {
-    User.findOne({firstName:req.params.name} , function(err , foundItems)
+    User.findOne({firstName:req.params.name ,role:0} , function(err , foundItems)
     {
         if(err)
         {
@@ -501,20 +511,30 @@ app.get('/studentUpdate/:name' , function(req, res)
         {
             if(foundItems)
             {
-                res.render('updateform', {Name:req.params.name , Student:foundItems})
+                Image.findOne({parentId: foundItems.email}, (err, pic) => { 
+                    if (err) { 
+                        console.log(err); 
+                    } 
+                    else { 
+                       console.log(pic)
+                        res.render('EditMyAccount' , {Item:foundItems  , Pic : pic})
+                    } 
+                }); 
+              
             }
         }
     })
     
 })
-app.get('/supervisorPannel' , function(req, res)
+app.get('/supervisorPannel' ,  function(req, res)
 {
     res.render('supervisorPannel')
 })
-app.post('/studentUpdate/:name' , function(req, res)
+app.post('/studentUpdate/:name' ,  checkSupervisor ,   function(req, res)
 {
     console.log("i am in update column")
-    User.updateOne({firstName:req.params.name},{email:req.body.email , firstName:req.body.firstName ,lastName:req.body.lastName , password:req.body.params} , function(err)
+   
+    User.updateOne({firstName:req.params.name , role:0},{email:req.body.email , firstName:req.body.firstName ,lastName:req.body.lastName , password:req.body.params} , function(err)
     {
         if(err)
         {
@@ -524,43 +544,52 @@ app.post('/studentUpdate/:name' , function(req, res)
     res.redirect('/')
 })
 
-app.get('/studentAdd' , function(req, res)
+app.get('/studentAdd' , checkSupervisor , function(req, res)
 {
     res.render('addform')
 })
-app.post('/studentAdd' ,function(req, res)
-{
+app.post('/studentAdd', checkSupervisor , async(req, res)=>{
     
-    User.register({ email :req.body.email , firstName : req.body.firstName , lastName:req.body.lastName } , req.body.password,function(err , user)
+
+ 
+    try{
+        const hashedPassword=  await bcrypt.hash(req.body.password , 10)
+        const newUser= new User({
+            firstName: req.body.firstName , 
+            lastName:req.body.lastName , 
+            email:req.body.email, 
+            role :0 ,
+            password:hashedPassword
+
+        })
+        console.log(newUser)
+        newUser.save()
+        res.redirect('/supervisorPannel')
+    }
+    catch
     {
-        if(err)
-        {
-            console.log(err)
-            res.redirect('/')
-        }
-        else
-        {
-            passport.authenticate("local")(req, res , function(){
-                res.redirect('Syllabus')
-            })
-        }
-    } )
+        res.redirect('/')
+    }
+       
+
+
 
 })
-app.get('/adminDel' , function(req, res)
+
+app.get('/adminDel' ,checkSupervisor , function(req, res)
 {
 
-    Admin.find({} , function(err,items)
+    User.find({role:1} , function(err,items)
     {
         res.render('adminDel' , {Admins: items})
     })
    
 })
-app.post('/adminDel' , function(req, res)
+app.post('/adminDel' ,checkSupervisor , function(req, res)
 {
     console.log("Put delete running")
     console.log(req.body)
-    User.deleteOne({firstName : req.body.Input} ,function(err)
+    User.deleteOne({firstName : req.body.Input ,role:1} ,function(err)
     {
         if(err)
         {
@@ -570,26 +599,41 @@ app.post('/adminDel' , function(req, res)
     })
     res.redirect('adminDel')
 })
-app.get('/adminAdd' , function(req, res)
+app.get('/adminAdd' ,checkSupervisor , function(req, res)
 {
     res.render('adminAdd')
 })
-app.post('/adminAdd' , function(req, res)
-{
+app.post('/adminAdd',checkSupervisor , async(req, res)=>{
     
-    const addAdmin= new Admin({
-        firstName : req.body.firstName , 
-        lastName : req.body.lastName , 
-        email : req.body.email , 
-        password : req.body.password
-    })
-    addAdmin.save()
-    res.render('supervisorPannel')
+
+ 
+    try{
+        const hashedPassword=  await bcrypt.hash(req.body.password , 10)
+        const newUser= new User({
+            firstName: req.body.firstName , 
+            lastName:req.body.lastName , 
+            email:req.body.email, 
+            role :1 ,
+            password:hashedPassword
+
+        })
+        console.log(newUser)
+        newUser.save()
+        res.redirect('/supervisorPannel')
+    }
+    catch
+    {
+        res.redirect('/')
+    }
+       
+
+
 
 })
-app.get('/adminUpdate' , function(req, res)
+
+app.get('/adminUpdate' ,checkSupervisor ,  function(req, res)
 {
-    Admin.find({} , function(err, items)
+    User.find({role:1} , function(err, items)
     {
         if(err)
         {
@@ -602,29 +646,42 @@ app.get('/adminUpdate' , function(req, res)
 
     })
 })
-app.get('/adminUpdate/:name' , function(req , res){
+app.get('/adminUpdate/:name' ,checkSupervisor, function(req , res){
 
 
-    Admin.findOne({firstName:req.params.name}, function(err, items)
+
+    User.findOne({firstName:req.params.name ,role:1} , function(err , foundItems)
     {
         if(err)
         {
             console.log(err)
         }
-        else{
-            if(items)
+        else
+        {
+            if(foundItems)
             {
-                res.render('adminUpdateForm' , {Name:req.params.name   , Admin:items})
+                Image.findOne({parentId: foundItems.email}, (err, pic) => { 
+                    if (err) { 
+                        console.log(err); 
+                    } 
+                    else { 
+                       console.log(pic)
+                        res.render('EditMyAccount' , {Item:foundItems  , Pic : pic})
+                    } 
+                }); 
+              
             }
-            
         }
     })
+
+
+    
 })
-app.post('/adminUpdate/:name' , function(req, res)
+app.post('/adminUpdate/:name' ,checkSupervisor , function(req, res)
 {
     console.log("I am in POST route")
     console.log(req.params.name)
-    Admin.updateOne({firstName:req.params.name} , {firstName:req.body.firstName , lastName:req.body.lastName , email:req.body.email ,password:req.body.password} ,function(err){
+    User.updateOne({firstName:req.params.name ,role:1} , {firstName:req.body.firstName , lastName:req.body.lastName , email:req.body.email ,password:req.body.password} ,function(err){
         if(err)
         {
             console.log(err)
@@ -634,7 +691,7 @@ app.post('/adminUpdate/:name' , function(req, res)
     res.redirect('/supervisorPannel')
 })
 
-app.get('/myScore' , function(req, res)
+app.get('/myScore' ,checkAuthenticated , function(req, res)
 {
     Score.find({email : req.user.email}, function(err , items){
 
@@ -649,7 +706,346 @@ app.get('/myScore' , function(req, res)
         }
     } )
 })
+app.get('/myScore/:email' ,checkAdminOrSupervisor  ,  function(req, res)
+{
 
+    Score.find({email : req.params.email}, function(err , items){
+
+        if(err)
+        {
+            console.log(err)
+        }
+        else
+        {
+           
+            res.render('myScores', {Scores: items})
+        }
+    } )
+})
+app.get('/studentList' ,checkAdminOrSupervisor , function(req, res)
+{
+    User.find({role:0} , function(err, items)
+    {
+        if(err)
+        {
+            console.log(err)
+        }
+        else
+        {
+            if(items)
+            {
+                res.render('studentList' , {Students:items})
+            }
+        }
+    })
+})
+
+
+app.post('/deleteTitle' , function(req, res)
+{
+    var array =[]
+    //array=req.body.TopicToDelete
+    var newArr= array.concat(req.body.TopicToDelete)
+    
+
+    newArr.forEach(function(item)
+    {
+        Topic.findOne({title:item} ,function(err,  items)
+        {
+            if(err)
+            {
+                console.log(err)
+            }
+            else
+            {
+                if(items)
+                {
+                    var arr= items.questions
+                    for(var i=0;i<arr.length;i++)
+                    {
+                        Question.deleteOne({title:arr[i].title} ,function(err)
+                        {
+                            if(err)
+                            {
+                                console.log(err)
+                            }
+                        })
+                    }
+                }
+            }
+        })
+       
+        Topic.deleteOne({title:item} ,function(err)
+        {
+            if(err)
+            {
+                console.log(err)
+            }
+        })
+    })
+
+   res.redirect('/adminSyllabus')
+})
+app.post('/deleteQuestions' , function(req, res)
+{
+   var arr=[]
+   var Y=[]
+    var Q= Y.concat(req.body.QuesToDelete)
+    Q.forEach(function(ques)
+    {
+        Question.deleteOne({title:ques}, function(err)
+        {
+            if(err)
+            {
+                console.log
+            }
+
+        })
+    })
+
+
+
+   Topic.findOne({title:req.body.Topic} , function(err, items)
+   {
+       if(err)
+       {
+           console.log(err)
+       }
+       else
+       {   var Z=[] 
+           var array= Z.concat(items.questions)
+           array.forEach(function(item)
+           {
+               //console.log(item.title)
+               arr.push(item.title)
+           })
+           //console.log(arr)
+       
+      // console.log(arr)
+       var newArray=[]
+       var X=[]
+       var questions= X.concat( req.body.QuesToDelete)
+       questions.forEach(function(question)
+       {
+           var index= arr.indexOf(question)
+           if(index>-1)
+           {
+              // console.log("Found" , index)
+               //console.log(question)
+               //array.splice(index, 1);
+               delete array[index]
+               //console.log(array)
+               
+            }
+              
+       })
+    }
+    var tempArr=[]
+    for(var i=0;i<array.length;i++)
+    {
+
+        if(typeof array[i] != 'undefined')
+        {
+           // console.log("Is Empty")
+            tempArr.push(array[i])
+        }
+    }
+    //console.log(tempArr)
+    Topic.updateOne({title:req.body.Topic} ,{questions:tempArr} , function(err)
+    {
+        if(err)
+        {
+            console.log(err)
+        }
+      
+    })
+      // console.log(array)
+
+   })
+   //console.log(arr)
+   res.redirect('/adminSyllabus')
+})
+
+app.get('/modal' , function(req, res)
+{
+    Topic.find({} , function(err ,items)
+    {
+        if(err)
+        {
+            console.log(err)
+        }
+        else
+        {
+            res.render('modal' , {topicNames:items})
+        }
+    })
+    
+})
+
+app.get('/editAccount'  , checkUSA , function(req, res)
+{
+    User.findOne({email:req.user.email}  , function(err ,items)
+    {
+        if(err)
+        {
+            console.log(err)
+        }
+        else
+        {
+            if(items)
+            {
+
+
+
+                Image.findOne({parentId: req.user.email}, (err, pic) => { 
+                    if (err) { 
+                        console.log(err); 
+                    } 
+                    else { 
+                       console.log(pic)
+                        res.render('EditMyAccount' , {Item:items  , Pic : pic})
+                    } 
+                }); 
+
+
+                
+            }
+        }
+    })
+
+
+})
+// To edit Profile
+app.post('/edit' , checkUSA ,  function(req, res)
+{
+    console.log("Edit Profile" , req.body)
+    User.findOneAndUpdate({email:req.body.Email2} , {firstName:req.body.FirstName , lastName:req.body.LastName , DOB:req.body.DateOfBirth , phoneNumber:req.body.PhoneNumber} ,function(err)
+    {
+        if(err)
+        {
+            console.log(err)
+        }
+        else
+        {
+            if(req.user.role==0 || req.user.role==1)
+            {
+                res.redirect('/editAccount')
+            }
+            if(req.user.role==2)
+            {
+                res.redirect('/supervisorPannel')
+            }
+        }
+    
+    })
+  
+})
+
+// To edit Image
+app.post('/editAccount' ,checkUSA,  upload.single('image'), (req, res, next) => { 
+  
+    
+    var obj = { 
+        parentId: req.body.Email ,
+        img: { 
+            data: fs.readFileSync(path.join(__dirname + '/uploads/' + req.file.filename)), 
+            contentType: 'image/png'
+        } 
+    } 
+    Image.findOne({parentId:req.body.Email} , function(err , Item)
+    {
+        if(err)
+        {
+            console.log(err)
+        }
+        else
+        {
+            if(Item)
+            {
+                Image.findOneAndUpdate( {parentId:req.body.Email},{img : { 
+                    data: fs.readFileSync(path.join(__dirname + '/uploads/' + req.file.filename)), 
+                    contentType: 'image/png'
+                } }, (err, item) => { 
+                    if (err) { 
+                        console.log(err); 
+                    } 
+                    else { 
+                        // item.save(); 
+                        if(req.user.role==0||req.user.role==1)
+                        {
+                            res.redirect('/editAccount'); 
+                        }
+                        if(req.user.role==2)
+                        {
+                            res.redirect('supervisorPannel');
+                        }
+
+                       
+                    } 
+                }); 
+            }
+            else
+            {
+                var obj = { 
+                   parentId : req.body.Email ,
+                    img: { 
+                        data: fs.readFileSync(path.join(__dirname + '/uploads/' + req.file.filename)), 
+                        contentType: 'image/png'
+                    } 
+                } 
+                Image.create(obj, (err, item) => { 
+                    if (err) { 
+                        console.log(err); 
+                    } 
+                    else { 
+                        // item.save(); 
+                        if(req.user.role==0||req.user.role==1)
+                        {
+                            res.redirect('/editAccount'); 
+                        }
+                        if(req.user.role==2)
+                        {
+                            res.redirect('/supervisorPannel');
+                        }
+                    } 
+                }); 
+            }
+        }
+    })
+  
+}); 
+
+app.post('/updatePassword'  ,checkUSA,  async function(req, res)
+{
+    console.log(req.body);
+    try{
+        const hashedPassword=  await bcrypt.hash(req.body.password , 10)
+        User.findOneAndUpdate({email:req.body.Email3} , {password:hashedPassword} , function(err)
+        {
+            console.log("Updated Password")
+            if(err)
+            {
+                console.log(err)
+            }
+            if(req.user.role==0 || req.user.role==1)
+            {
+                res.redirect('/editAccount')
+            }
+            if(req.user.role==2)
+            {
+                res.redirect('/supervisorPannel')
+            }
+          
+        })
+     
+    }
+    catch
+    {
+        res.redirect('/syllabus')
+    }
+
+
+})
 
 
 
@@ -695,7 +1091,7 @@ app.get('/forgot', function(req, res) {
         var mailOptions = {
           to: user.email,
           from: 'bytecodebytes@gmail.com',
-          subject: 'Node.js Password Reset',
+          subject: 'Code Bytes  Password Reset',
           text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
             'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
             'http://' + req.headers.host + '/reset/' + token + '\n\n' +
@@ -809,19 +1205,100 @@ app.get('/forgot', function(req, res) {
   {
       if(req.isAuthenticated())
       {
-          return next()
-      }
+          if(req.user.role==0)
+          {
+            return next()
+        }
+          }
+          
       res.redirect('/login')
   }
   function checkNotAuthenticated(req, res, next)
   {
       if(req.isAuthenticated())
       {
-          return    res.redirect('/')
+          return    res.redirect('/syllabus')
       }
      
        next()
   }
+  function checkNotAdmin(req, res, next)
+  {
+      if(req.isAuthenticated())
+      {
+          return    res.redirect('/adminSyllabus')
+      }
+     
+       next()
+  }
+  function checkNotSupervisor(req, res, next)
+  {
+      if(req.isAuthenticated())
+      {
+          return    res.redirect('/supervisorPannel')
+      }
+     
+       next()
+  }
+  
+
+  function checkAdmin(req, res, next)
+  {
+      
+        if(req.isAuthenticated())
+        {
+            if(req.user.role==1)
+            {
+                return next()
+            }
+            
+        }
+      
+   
+      res.redirect('/adminLogin')
+  }
+  function checkSupervisor(req, res, next)
+  {
+      
+        if(req.isAuthenticated())
+        {
+            if(req.user.role==2)
+            {
+                return next()
+            }
+            
+        }
+      
+   
+      res.redirect('/supervisorLogin')
+  }
+  function checkUSA(req, res, next)
+  {
+      
+        if(req.isAuthenticated())
+        {
+            
+                return next()
+            
+            
+        }
+      
+   
+      res.redirect('/')
+  }
+function checkAdminOrSupervisor(req, res, next)
+{
+    if(req.isAuthenticated())
+    {
+        if(req.user.role==2 || req.user.role==1)
+        {
+            return next()
+        }
+        
+    }
+
+}
+
 
 app.listen(3000 , function()
 {

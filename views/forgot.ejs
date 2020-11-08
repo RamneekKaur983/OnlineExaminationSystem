@@ -1,8 +1,11 @@
 <%- include('header'); -%>
-<% if(messages.error) { %>
+<div   style="background-color: white; ">
+    <% if(messages.error) { %>
 
-	<%= messages.error %>
-  <%} %>
+      <%= messages.error %>
+    <%} %>
+
+  </div>
 <div class="row">
 	<div class="col-md-12">
 		<form action="/forgot" method="POST">
