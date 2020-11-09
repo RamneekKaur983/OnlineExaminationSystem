@@ -34,7 +34,7 @@ app.use(session({
   }))
   app.use(passport.initialize())
   app.use(passport.session())
-mongoose.connect('mongodb://localhost:27017/OnlineExamination', {useNewUrlParser: true});
+mongoose.connect('mongodb+srv://admin_Ramneek:Ramneek123@cluster0.cyzml.mongodb.net/OnlineExaminationSystem', {useNewUrlParser: true});
 mongoose.set('useCreateIndex', true);
 
 
@@ -80,6 +80,9 @@ const Score = new mongoose.model("Score" , scoreSchema)
 const Question = new  mongoose.model("Question" ,QuestionSchema)
 userSchema.plugin(passportLocalMongoose , {usernameField: 'email'})
 const User =  new mongoose.model("User", userSchema)
+
+
+
 initializePassport(
     
     passport , 
