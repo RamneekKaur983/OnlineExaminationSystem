@@ -34,7 +34,8 @@ app.use(session({
   }))
   app.use(passport.initialize())
   app.use(passport.session())
-mongoose.connect('mongodb+srv://admin_Ramneek:Ramneek123@cluster0.cyzml.mongodb.net/OnlineExaminationSystem', {useNewUrlParser: true});
+//mongoose.connect('mongodb+srv://admin_Ramneek:Ramneek123@cluster0.cyzml.mongodb.net/OnlineExaminationSystem', {useNewUrlParser: true});
+mongoose.connect('mongodb://localhost:27017/OnlineExamination', {useNewUrlParser: true});
 mongoose.set('useCreateIndex', true);
 
 
