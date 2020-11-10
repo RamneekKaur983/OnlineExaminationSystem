@@ -1274,7 +1274,7 @@ app.get('/forgot', function(req, res) {
         }
       
    
-      res.redirect('/supervisorLogin')
+      res.redirect('/Suplogin')
   }
   function checkUSA(req, res, next)
   {
